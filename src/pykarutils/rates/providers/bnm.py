@@ -1,6 +1,8 @@
 import csv
 import requests
+from datetime import datetime
 from io import StringIO
+from typing import List, Optional
 from ..base_provider import RateProvider
 from ..structure.result import RateResult, RatesResult
 
@@ -10,37 +12,93 @@ RATES_URL = 'https://bnm.md/en/export-official-exchange-rates?date='
 class BnmProvider(RateProvider):
     """BNM rate provider."""
 
+    def __init__(self):
+        self._rates_cache = {}
+
     def get_rate(self, date: str, code: str) -> RateResult | None:
-        """Get the rate for a given code."""
-        rates = self._get_api_rates(RATES_URL + date)
+        """
+        Get the exchange rate for a given currency code on a specific date.
 
-        for rate in rates:
-            if rate['Abbr'] == code:
-                return RateResult(
+        Args:
+            date (str): The date for which to retrieve the exchange rate in the format 'dd.mm.yyyy'.
+            code (str): The currency code for which to retrieve the exchange rate.
+
+        Returns:
+            RateResult | None: A RateResult object containing the exchange rate information if found,
+                               otherwise None.
+        """
+        rates_result = self.get_rates(date, currencies=[code])
+        return rates_result.rates.get(code)
+
+    def get_rates(self, date: str = None, currencies: Optional[List[str]] = None) -> RatesResult:
+        """
+        Get all exchange rates for a specific date and optionally filter by currency codes.
+
+        Args:
+            date (str, optional): The date for which to retrieve the exchange rates in the format 'dd.mm.yyyy'.
+                                  If not provided, the current date is used.
+            currencies (Optional[List[str]], optional): A list of currency codes to filter the rates. If not provided,
+                                                        all rates are returned.
+
+        Returns:
+            RatesResult: An object containing the exchange rates for the specified date and currencies.
+        """
+        if date is None:
+            date = datetime.now().strftime('%d.%m.%Y')
+
+        if date in self._rates_cache:
+            rates_dict = self._rates_cache[date]
+        else:
+            rates_data = self._get_api_rates(RATES_URL + date)
+            rates_dict = {}
+            for rate in rates_data:
+                rates_dict[rate['Abbr']] = RateResult(
                     name=rate['Currency'],
                     code=rate['Abbr'],
                     unit=int(rate['Rate']),
-                    rate=float(rate['Rates'].replace(',', '.'))
+                    rate=float(rate['Rates'].replace(',', '.')),
+                    base_currency='MDL',
+                    rate_text=f"{rate['Rate']} {rate['Abbr']} = {rate['Rates'].replace(',', '.')} MDL"
                 )
-        return None
+            self._rates_cache[date] = rates_dict
 
-    def get_rates(self, date: str) -> RatesResult:
-        """Get all rates."""
-        rates = self._get_api_rates(RATES_URL + date)
+        if currencies is not None:
+            filtered_rates = {code: rate for code, rate in rates_dict.items() if code in currencies}
+        else:
+            filtered_rates = rates_dict
+
         return RatesResult(
-            rates=[
-                RateResult(
-                    name=rate['Currency'],
-                    code=rate['Abbr'],
-                    unit=int(rate['Rate']),
-                    rate=float(rate['Rates'].replace(',', '.'))
-                )
-                for rate in rates
-            ],
             date=date,
-            provider = 'BNM'
+            rates=filtered_rates,
+            provider='BNM'
         )
 
+    def convert(self, date: str, amount: float, from_code: str, to_code: str) -> float:
+        """
+        Convert an amount from one currency to another.
+
+        Args:
+            date (str): The date for which to retrieve the exchange rates in the format 'dd.mm.yyyy'.
+            amount (float): The amount of money to convert.
+            from_code (str): The currency code of the currency to convert from.
+            to_code (str): The currency code of the currency to convert to.
+
+        Returns:
+            float: The converted amount in the target currency.
+
+        Raises:
+            Exception: If the currency code is invalid or no rate is found for the currency code.
+        """
+        rates_result = self.get_rates(date, currencies=[from_code, to_code])
+        rates = rates_result.rates
+        from_rate = rates.get(from_code)
+        to_rate = rates.get(to_code)
+
+        if from_rate is None or to_rate is None:
+            raise Exception('Invalid currency code or no rate found for the currency code')
+
+        converted_amount = (from_rate.rate * to_rate.unit) / (from_rate.unit * to_rate.rate) * amount
+        return converted_amount
 
     @staticmethod
     def _get_api_rates(url: str) -> list:
