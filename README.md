@@ -1,6 +1,6 @@
 # pykarutils
 
-This package contains some utility functions
+This package contains some utility functions to use day by day
 
 ## Installation
 
