@@ -1,6 +1,8 @@
 # PyKarUtils
 
-`PyKarUtils` is a Python utility package that simplifies common tasks with a set of helper functions, factory patterns, and result handling utilities. This package is modular and consists of multiple components designed for different purposes, making it highly adaptable to various Python projects.
+`PyKarUtils` is a Python utility package that simplifies common tasks with a set of helper functions, factory patterns,
+and result handling utilities. This package is modular and consists of multiple components designed for different
+purposes, making it highly adaptable to various Python projects.
 
 ## Table of Contents
 
@@ -9,22 +11,21 @@
 - [Contributing](#contributing)
 - [License](#license)
 
-
 ## Installation
 
 You can install the package using `pip`:
 
-    ```bash
-    pip install pykarutils
-    ``` 
+```bash
+pip install pykarutils
+```
 
 Alternatively, if you're installing from the source:
-    
-    ```bash
-    git clone https://github.com/karpatiuk/pykarutils.git
-    cd pykarutils
-    python setup.py install
-    ```
+
+```bash
+git clone https://github.com/karpatiuk/pykarutils.git
+cd pykarutils
+python setup.py install
+```
 
 ## Usage
 
@@ -36,7 +37,8 @@ from pykarutils import RateFactory
 
 ## Contributing
 
-We welcome contributions to enhance the functionality of PyKarUtils. Feel free to submit issues or pull requests to the repository.
+We welcome contributions to enhance the functionality of PyKarUtils. Feel free to submit issues or pull requests to the
+repository.
 
 1. Fork the repository.
 2. Create your feature branch: ```git checkout -b feature/YourFeature.```
