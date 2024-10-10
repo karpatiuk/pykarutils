@@ -1,2 +1,2 @@
 from .factory import RateFactory
-from .base_provider import RateProvider
+from .base_provider import BaseRateProvider

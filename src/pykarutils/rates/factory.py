@@ -8,6 +8,6 @@ class RateFactory:
     @staticmethod
     def get_provider(name: str) -> Union[BnmProvider, None]:
         """Get a rate provider by name."""
-        if name == 'bnm':
+        if name == BnmProvider.PROVIDER_NAME:
             return BnmProvider()
         return None

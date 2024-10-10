@@ -3,17 +3,16 @@ import requests
 from datetime import datetime
 from io import StringIO
 from typing import List, Optional
-from ..base_provider import RateProvider
+from ..base_provider import BaseRateProvider
 from ..structure.result import RateResult, RatesResult
 
 RATES_URL = 'https://bnm.md/en/export-official-exchange-rates?date='
 
 
-class BnmProvider(RateProvider):
+class BnmProvider(BaseRateProvider):
     """BNM rate provider."""
 
-    def __init__(self):
-        self._rates_cache = {}
+    PROVIDER_NAME = 'BNM'
 
     def get_rate(self, date: str, code: str) -> RateResult | None:
         """
@@ -72,33 +71,6 @@ class BnmProvider(RateProvider):
             rates=filtered_rates,
             provider='BNM'
         )
-
-    def convert(self, date: str, amount: float, from_code: str, to_code: str) -> float:
-        """
-        Convert an amount from one currency to another.
-
-        Args:
-            date (str): The date for which to retrieve the exchange rates in the format 'dd.mm.yyyy'.
-            amount (float): The amount of money to convert.
-            from_code (str): The currency code of the currency to convert from.
-            to_code (str): The currency code of the currency to convert to.
-
-        Returns:
-            float: The converted amount in the target currency.
-
-        Raises:
-            Exception: If the currency code is invalid or no rate is found for the currency code.
-        """
-        rates_result = self.get_rates(date, currencies=[from_code, to_code])
-        rates = rates_result.rates
-        from_rate = rates.get(from_code)
-        to_rate = rates.get(to_code)
-
-        if from_rate is None or to_rate is None:
-            raise Exception('Invalid currency code or no rate found for the currency code')
-
-        converted_amount = (from_rate.rate * to_rate.unit) / (from_rate.unit * to_rate.rate) * amount
-        return converted_amount
 
     @staticmethod
     def _get_api_rates(url: str) -> list:
