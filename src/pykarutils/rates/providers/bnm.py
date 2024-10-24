@@ -6,28 +6,12 @@ from typing import List, Optional
 from ..base_provider import BaseRateProvider
 from ..structure.result import RateResult, RatesResult
 
-RATES_URL = 'https://bnm.md/en/export-official-exchange-rates?date='
-
 
 class BnmProvider(BaseRateProvider):
     """BNM rate provider."""
 
     PROVIDER_NAME = 'BNM'
-
-    def get_rate(self, date: str, code: str) -> RateResult | None:
-        """
-        Get the exchange rate for a given currency code on a specific date.
-
-        Args:
-            date (str): The date for which to retrieve the exchange rate in the format 'dd.mm.yyyy'.
-            code (str): The currency code for which to retrieve the exchange rate.
-
-        Returns:
-            RateResult | None: A RateResult object containing the exchange rate information if found,
-                               otherwise None.
-        """
-        rates_result = self.get_rates(date, currencies=[code])
-        return rates_result.rates.get(code)
+    RATES_URL = 'https://bnm.md/en/export-official-exchange-rates?date='
 
     def get_rates(self, date: str = None, currencies: Optional[List[str]] = None) -> RatesResult:
         """
@@ -48,7 +32,7 @@ class BnmProvider(BaseRateProvider):
         if date in self._rates_cache:
             rates_dict = self._rates_cache[date]
         else:
-            rates_data = self._get_api_rates(RATES_URL + date)
+            rates_data = self._get_api_rates(self.RATES_URL + date)
             rates_dict = {}
             for rate in rates_data:
                 rates_dict[rate['Abbr']] = RateResult(
@@ -67,9 +51,9 @@ class BnmProvider(BaseRateProvider):
             filtered_rates = rates_dict
 
         return RatesResult(
-            date=date,
-            rates=filtered_rates,
-            provider='BNM'
+            date = date,
+            rates = filtered_rates,
+            provider = self.PROVIDER_NAME
         )
 
     @staticmethod
@@ -80,24 +64,21 @@ class BnmProvider(BaseRateProvider):
             response = requests.get(url)
             response.raise_for_status()
 
-            # Check if the request was successful
-            if response.status_code == 200:
-                response.raise_for_status()
-                content = response.content.decode('utf-8')
+            content = response.content.decode('utf-8')
 
-                # Split the content into individual lines
-                lines = content.splitlines()
+            # Split the content into individual lines
+            lines = content.splitlines()
 
-                # Exclude the first 2 rows and the last 4 rows
-                relevant_lines = lines[2:-4]
+            # Exclude the first 2 rows and the last 4 rows
+            relevant_lines = lines[2:-4]
 
-                # Use StringIO to convert the list of lines back into a file-like object
-                csv_data = StringIO('\n'.join(relevant_lines))
+            # Use StringIO to convert the list of lines back into a file-like object
+            csv_data = StringIO('\n'.join(relevant_lines))
 
-                # Parse the CSV data
-                reader = csv.DictReader(csv_data, delimiter=';')
-                rates = list(reader)
-                return rates
+            # Parse the CSV data
+            reader = csv.DictReader(csv_data, delimiter=';')
+            rates = list(reader)
+
         except requests.exceptions.HTTPError as http_err:
             raise Exception(f"HTTP Error: {http_err}")
         except requests.exceptions.ReadTimeout as timeout_err:
@@ -108,3 +89,5 @@ class BnmProvider(BaseRateProvider):
             raise Exception(f"Exception request: {req_err}")
         except Exception as e:
             raise Exception(f"An error occurred while fetching rates data: {e}")
+
+        return rates
