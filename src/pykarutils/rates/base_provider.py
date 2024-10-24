@@ -62,7 +62,7 @@ class BaseRateProvider(RateProviderInterface, ABC):
         """
         self._rates_cache = {}
 
-    @abstractmethod
+
     def get_rate(self, date: str, code: str) -> RateResult:
         """
         Get the exchange rate for a given currency code on a specific date.
@@ -74,7 +74,8 @@ class BaseRateProvider(RateProviderInterface, ABC):
         Returns:
             RateResult: A RateResult object containing the exchange rate information.
         """
-        pass
+        rates_result = self.get_rates(date, currencies=[code])
+        return rates_result.rates.get(code)
 
     @abstractmethod
     def get_rates(self, date: str, currencies: Optional[List[str]] = None) -> RatesResult:
