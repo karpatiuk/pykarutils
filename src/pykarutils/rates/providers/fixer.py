@@ -25,40 +25,45 @@ class FixerProvider(BaseRateProvider):
         super().__init__()
 
     def get_rates(self, date: str = None, currencies: Optional[List[str]] = None) -> RatesResult:
-        if date is None:
-            date = datetime.now().strftime('%Y-%m-%d')
-        else:
-            self._url = f"{self.HISTORICAL_RATES_URL}{date}"
+        try:
+            if date is None:
+                date = datetime.now().strftime('%Y-%m-%d')
+            else:
+                datetime.strptime(date, '%Y-%m-%d')
+                self._url = f"{self.HISTORICAL_RATES_URL}{date}"
 
-        if date in self._rates_cache:
-            rates_dict = self._rates_cache[date]
-        else:
-            rates_data = self._get_api_rates(self._url,self._api_key)
-            rates_dict = {}
+            if date in self._rates_cache:
+                rates_dict = self._rates_cache[date]
+            else:
+                rates_data = self._get_api_rates(self._url,self._api_key)
+                rates_dict = {}
 
-            for currency, rate in rates_data.items():
-                rates_dict[currency] = RateResult(
-                    name=currency,
-                    code=currency,
-                    unit=1,
-                    rate=rate,
-                    base_currency='EUR',
-                    rate_text=f"1 EUR = {rate} {currency}"
-                )
+                for currency, rate in rates_data.items():
+                    rates_dict[currency] = RateResult(
+                        name=currency,
+                        code=currency,
+                        unit=1,
+                        rate=rate,
+                        base_currency='EUR',
+                        rate_text=f"1 EUR = {rate} {currency}"
+                    )
 
-            self._rates_cache[date] = rates_dict
+                self._rates_cache[date] = rates_dict
 
-        if currencies is not None:
-            filtered_rates = {code: rate for code, rate in rates_dict.items() if code in currencies}
-        else:
-            filtered_rates = rates_dict
+            if currencies is not None:
+                filtered_rates = {code: rate for code, rate in rates_dict.items() if code in currencies}
+            else:
+                filtered_rates = rates_dict
 
-        # print(rates_data)
-        return RatesResult(
-            date=date,
-            rates=filtered_rates,
-            provider=self.PROVIDER_NAME
-        )
+            # print(rates_data)
+            return RatesResult(
+                date=date,
+                rates=filtered_rates,
+                provider=self.PROVIDER_NAME
+            )
+
+        except Exception as e:
+            raise Exception(f"An error occurred : {e}")
 
     @staticmethod
     def _get_api_rates(url: str, api_key: str) -> list:

@@ -26,35 +26,40 @@ class BnmProvider(BaseRateProvider):
         Returns:
             RatesResult: An object containing the exchange rates for the specified date and currencies.
         """
-        if date is None:
-            date = datetime.now().strftime('%d.%m.%Y')
+        try:
+            if date is None:
+                date = datetime.now().strftime('%d.%m.%Y')
+            else:
+                datetime.strptime(date, '%d.%m.%Y')
 
-        if date in self._rates_cache:
-            rates_dict = self._rates_cache[date]
-        else:
-            rates_data = self._get_api_rates(self.RATES_URL + date)
-            rates_dict = {}
-            for rate in rates_data:
-                rates_dict[rate['Abbr']] = RateResult(
-                    name=rate['Currency'],
-                    code=rate['Abbr'],
-                    unit=int(rate['Rate']),
-                    rate=float(rate['Rates'].replace(',', '.')),
-                    base_currency='MDL',
-                    rate_text=f"{rate['Rate']} {rate['Abbr']} = {rate['Rates'].replace(',', '.')} MDL"
-                )
-            self._rates_cache[date] = rates_dict
+            if date in self._rates_cache:
+                rates_dict = self._rates_cache[date]
+            else:
+                rates_data = self._get_api_rates(self.RATES_URL + date)
+                rates_dict = {}
+                for rate in rates_data:
+                    rates_dict[rate['Abbr']] = RateResult(
+                        name=rate['Currency'],
+                        code=rate['Abbr'],
+                        unit=int(rate['Rate']),
+                        rate=float(rate['Rates'].replace(',', '.')),
+                        base_currency='MDL',
+                        rate_text=f"{rate['Rate']} {rate['Abbr']} = {rate['Rates'].replace(',', '.')} MDL"
+                    )
+                self._rates_cache[date] = rates_dict
 
-        if currencies is not None:
-            filtered_rates = {code: rate for code, rate in rates_dict.items() if code in currencies}
-        else:
-            filtered_rates = rates_dict
+            if currencies is not None:
+                filtered_rates = {code: rate for code, rate in rates_dict.items() if code in currencies}
+            else:
+                filtered_rates = rates_dict
 
-        return RatesResult(
-            date = date,
-            rates = filtered_rates,
-            provider = self.PROVIDER_NAME
-        )
+            return RatesResult(
+                date = date,
+                rates = filtered_rates,
+                provider = self.PROVIDER_NAME
+            )
+        except Exception as e:
+            raise Exception(f"An error occurred : {e}")
 
     @staticmethod
     def _get_api_rates(url: str) -> list:
