@@ -31,8 +31,34 @@ python setup.py install
 
 Here is a simple example of how to use some of the utility functions from PyKarUtils:
 
+### BNM Rate Provider
 ```python
-from pykarutils import RateFactory
+from pykarutils import BnmProvider, RateFactory
+
+# Initialize the provider
+provider = RateFactory.get_provider(BnmProvider.PROVIDER_NAME)
+
+# Get rates for a specific date
+rates_result = provider.get_rates('02.10.2024')
+
+# Print the rates
+for code, rate in rates_result.rates.items():
+    print(f"{rate.name} ({rate.code}): {rate.rate} {rate.base_currency}")
+```
+
+### Fixer Rate Provider
+```python
+from pykarutils import FixerProvider, RateFactory
+
+# Initialize the provider
+provider = RateFactory.get_provider(FixerProvider.PROVIDER_NAME,'your_api_key')
+
+# Get rates for a specific date
+rates_result = provider.get_rates('2024-10-25')
+
+# Print the rates
+for code, rate in rates_result.rates.items():
+    print(f"{rate.name} ({rate.code}): {rate.rate} {rate.base_currency}")
 ```
 
 ## Contributing

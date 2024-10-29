@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pykarutils",
-    version="0.1.8",
+    version="0.1.10",
     author="Andrei Karpatiuk",
     author_email="karpatiuk@gmail.com",
     description="A small utility package for Python",
