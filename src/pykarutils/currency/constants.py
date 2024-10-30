@@ -1,4 +1,3 @@
-import json
 
 CURRENCIES = {
     "AED": {"name": "United Arab Emirates Dirham", "symbol": "د.إ"},
