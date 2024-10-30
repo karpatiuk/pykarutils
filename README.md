@@ -27,11 +27,12 @@ cd pykarutils
 python setup.py install
 ```
 
-## Rates Usage
+## Usage
 
 Here is a simple example of how to use some of the utility functions from PyKarUtils:
 
-### Load BNM Rate Provider
+### **Rates Usages**
+Load BNM Rate Provider
 ```python
 from pykarutils import BnmProvider, RateFactory
 
@@ -39,7 +40,7 @@ from pykarutils import BnmProvider, RateFactory
 provider = RateFactory.get_provider(BnmProvider.PROVIDER_NAME)
 ```
 
-### Load Fixer Rate Provider
+Load Fixer Rate Provider
 ```python
 from pykarutils import FixerProvider, RateFactory
 
