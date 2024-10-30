@@ -51,8 +51,10 @@ Get all provider Rates
 ```python
 # Get rates for current date
 rates_result = provider.get_rates()
+
 # Get rates for a specific date
 # rates_result = provider.get_rates('02.10.2024')
+
 # Print the rates
 for code, rate in rates_result.rates.items():
     print(f"{rate.name} ({rate.code}): {rate.rate} {rate.base_currency}")
